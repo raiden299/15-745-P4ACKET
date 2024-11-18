@@ -1,0 +1,47 @@
+{
+    "hosts": [
+        {
+            "name": "h1",
+            "ip": "10.0.1.1/32",
+            "mac": "08:00:00:00:01:11"
+        },
+        {
+            "name": "h2",
+            "ip": "10.0.2.2/32",
+            "mac": "08:00:00:00:02:22"
+        }
+    ],
+    "switches": [
+        {
+            "name": "s1",
+            "thrift_port": 9090
+        },
+        {
+            "name": "s2",
+            "thrift_port": 9091
+        }
+    ],
+    "links": [
+        {
+            "node1": "h1",
+            "node2": "s1",
+            "bandwidth": 10,
+            "delay": "5ms",
+            "loss": 0
+        },
+        {
+            "node1": "h2",
+            "node2": "s2",
+            "bandwidth": 10,
+            "delay": "5ms",
+            "loss": 0
+        },
+        {
+            "node1": "s1",
+            "node2": "s2",
+            "bandwidth": 10,
+            "delay": "2ms",
+            "loss": 0
+        }
+    ]
+}
