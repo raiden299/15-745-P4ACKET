@@ -209,8 +209,8 @@ control NewIngress(inout headers hdr, inout metadata meta, inout standard_metada
         if (hdr.ethernet.isValid()) {
             if (hdr.ethernet.etherType == TYPE_IPV6) {
                 ipv6_lpm.apply();
-            } else {
                 ipv6_prio_mark.apply();
+            } else {
                 ipv4_lpm.apply();
             }
         }

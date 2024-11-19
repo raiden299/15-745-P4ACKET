@@ -48,8 +48,8 @@ def setup_topology(config):
             mac=host.get('mac'),
         )
         hosts[host['name']] = h
-        if "commands" in host:
-            for cmd in host["commands"]:
+        if 'commands' in host:
+            for cmd in host['commands']:
                 h.cmd(cmd)
         
     for switch in config.get('switches', []):
@@ -90,11 +90,19 @@ def stop_network(net):
 def start_cli(net):
     CLI(net)
 
+def configure_hosts(net, config):
+    for host in config.get('hosts', []):
+        if 'commands' in host:
+            h = net.get(host['name'])
+            for cmd in host['commands']:
+                h.cmd(cmd)
+
 if __name__ == '__main__':
     setLogLevel('info')
     
     config = load_config('setup_config.json')
     net = setup_topology(config)
     start_network(net)
+    configure_hosts(net, config)
     start_cli(net)
     stop_network(net)
