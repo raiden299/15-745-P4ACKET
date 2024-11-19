@@ -1,7 +1,7 @@
 .PHONY: all
 
 PROG=prog/simple_test
-SWITCH_EXE=/usr/bin/simple_switch_grpc
+SWITCH_EXE=simple_switch_grpc
 
 
 all:
