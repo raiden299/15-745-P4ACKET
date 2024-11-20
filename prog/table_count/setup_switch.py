@@ -10,7 +10,7 @@ def run_command(command):
 
 def setup_switch(switch_name, thrift_port, table_entries):
     for entry in table_entries:
-        command = f"simple_switch_CLI --thrift-port {thrift_port} << '{entry}'"
+        command = f"echo '{entry}' | simple_switch_CLI --thrift-port {thrift_port}"
         run_command(command)
         print(f"Set up entry on {switch_name}: {entry}")
 
@@ -19,17 +19,11 @@ def main():
         config = json.load(f)
 
     table_entries_s1 = [
-        "table_add ipv4_lpm ipv4_forward 10.0.0.2/32 => 00:00:00:00:00:02 2",
-        "table_add ipv6_lpm ipv6_forward 2001:db8::2/128 => 00:00:00:00:00:02 2"
-    ]
-
-    table_entries_s2 = [
-        "table_add ipv4_lpm ipv4_forward 10.0.0.1/32 => 00:00:00:00:00:01 1",
-        "table_add ipv6_lpm ipv6_forward 2001:db8::1/128 => 00:00:00:00:00:01 1"
+        "table_add ipv4_lpm ipv4_forward 10.0.0.10/32 => 00:04:00:00:00:00 1",
+        "table_add ipv4_lpm ipv4_forward 10.0.1.10/32 => 00:04:00:00:00:01 2"
     ]
 
     setup_switch('s1', 9090, table_entries_s1)
-    setup_switch('s2', 9091, table_entries_s2)
 
 if __name__ == '__main__':
     main()

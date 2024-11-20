@@ -228,9 +228,9 @@ control CalcChecksum(inout headers hdr, inout metadata meta) {
 control NewDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
-        packet.emit(hdr.tcount);
         packet.emit(hdr.ipv4);
         packet.emit(hdr.ipv6);
+        packet.emit(hdr.tcount);
     }
 }
 
