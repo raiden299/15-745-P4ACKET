@@ -19,17 +19,11 @@ def main():
         config = json.load(f)
 
     table_entries_s1 = [
-        "table_add ipv4_lpm ipv4_forward 10.0.1.1/32 => 08:00:00:00:01:11 1",
-        "table_add ipv4_lpm ipv4_forward 10.0.2.2/32 => 08:00:00:00:02:00 2"
-    ]
-
-    table_entries_s2 = [
-        "table_add ipv4_lpm ipv4_forward 10.0.1.1/32 => 08:00:00:00:01:00 1",
-        "table_add ipv4_lpm ipv4_forward 10.0.2.2/32 => 08:00:00:00:02:22 2"
+        "table_add ipv4_lpm ipv4_forward 10.0.0.10/32 => 00:04:00:00:00:00 1",
+        "table_add ipv4_lpm ipv4_forward 10.0.1.10/32 => 00:04:00:00:00:01 2"
     ]
 
     setup_switch('s1', 9090, table_entries_s1)
-    setup_switch('s2', 9091, table_entries_s2)
 
 if __name__ == '__main__':
     main()

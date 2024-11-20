@@ -48,9 +48,6 @@ def setup_topology(config):
             mac=host.get('mac'),
         )
         hosts[host['name']] = h
-        if 'commands' in host:
-            for cmd in host['commands']:
-                h.cmd(cmd)
         
     for switch in config.get('switches', []):
         s = net.addSwitch(
@@ -58,8 +55,6 @@ def setup_topology(config):
             sw_path=args.behavioral_exe,
             json_path=args.json,
             thrift_port=switch['thrift_port'],
-            log_console=True,
-            log_file=args.log_file,
             pcap_dump=args.pcap_dump,
             enable_debugger=False,
         )
@@ -90,12 +85,21 @@ def stop_network(net):
 def start_cli(net):
     CLI(net)
 
-def configure_hosts(net, config):
+def configure_hosts(net, config, mode):
+    host_num = 0
+
+    sw_mac = ["00:aa:bb:00:00:%02x" % n for n in range(len(config.get('hosts', [])))]
+
+    sw_addr = ["10.0.%d.1" % n for n in range(len(config.get('hosts', [])))]
+
     for host in config.get('hosts', []):
-        if 'commands' in host:
-            h = net.get(host['name'])
-            for cmd in host['commands']:
-                h.cmd(cmd)
+        h = net.get(host['name'])
+        if mode == 'l2':
+            h.setDefaultRoute("dev eth0")
+        elif mode == 'l3':
+            h.setARP(sw_addr[host_num], sw_mac[host_num])
+            h.setDefaultRoute("via %s" % sw_addr[host_num])
+        host_num += 1
 
 if __name__ == '__main__':
     setLogLevel('info')
@@ -103,6 +107,6 @@ if __name__ == '__main__':
     config = load_config('setup_config.json')
     net = setup_topology(config)
     start_network(net)
-    configure_hosts(net, config)
+    configure_hosts(net, config, args.mode)
     start_cli(net)
     stop_network(net)

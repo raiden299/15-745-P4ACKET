@@ -2,31 +2,19 @@
     "hosts": [
         {
             "name": "h1",
-            "ip": "10.0.1.1/24",
-            "mac": "08:00:00:00:01:11",
-            "commands": [
-                "route add default gw 10.0.1.10 dev eth0",
-                "arp -i eth0 -s 10.0.1.10 08:00:00:00:01:00"
-            ]
+            "ip": "10.0.0.10/24",
+            "mac": "00:04:00:00:00:00"
         },
         {
             "name": "h2",
-            "ip": "10.0.2.2/24",
-            "mac": "08:00:00:00:02:22",
-            "commands": [
-                "route add default gw 10.0.2.20 dev eth0",
-                "arp -i eth0 -s 10.0.2.20 08:00:00:00:02:00"
-            ]
+            "ip": "10.0.1.10/24",
+            "mac": "00:04:00:00:00:01"
         }
     ],
     "switches": [
         {
             "name": "s1",
             "thrift_port": 9090
-        },
-        {
-            "name": "s2",
-            "thrift_port": 9091
         }
     ],
     "links": [
@@ -39,14 +27,7 @@
         },
         {
             "node1": "h2",
-            "node2": "s2",
-            "bandwidth": 10,
-            "delay": "5ms",
-            "loss": 0
-        },
-        {
-            "node1": "s1",
-            "node2": "s2",
+            "node2": "s1",
             "bandwidth": 10,
             "delay": "5ms",
             "loss": 0
