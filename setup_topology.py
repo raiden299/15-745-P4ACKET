@@ -28,6 +28,9 @@ parser.add_argument('--switch-config', help='simple_switch_CLI script to configu
                     type=str, action="store", required=False, default=False)
 parser.add_argument('--cli-message', help='Message to print before starting CLI',
                     type=str, action="store", required=False, default=False)
+parser.add_argument('--grpc-server-addr', help='Address to start the gRPC server',
+                    type=str, action="store", default='0.0.0.0:50051')
+parser.add_argument('--cpu-port', help='CPU port', type=int, action="store", default=16)
 
 args = parser.parse_args()
 
@@ -57,6 +60,8 @@ def setup_topology(config):
             thrift_port=switch['thrift_port'],
             pcap_dump=args.pcap_dump,
             enable_debugger=False,
+            grpc_server_addr=args.grpc_server_addr,
+            cpu_port=args.cpu_port,
         )
         switches[switch['name']] = s
         

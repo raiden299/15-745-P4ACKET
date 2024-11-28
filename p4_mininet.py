@@ -60,6 +60,8 @@ class P4Switch(Switch):
                  verbose = False,
                  device_id = None,
                  enable_debugger = False,
+                 grpc_server_addr = None,
+                 cpu_port = None,
                  **kwargs):
         Switch.__init__(self, name, **kwargs)
         assert(sw_path)
@@ -78,6 +80,8 @@ class P4Switch(Switch):
         self.thrift_port = thrift_port
         self.pcap_dump = pcap_dump
         self.enable_debugger = enable_debugger
+        self.grpc_server_addr = grpc_server_addr
+        self.cpu_port = cpu_port
         self.log_console = log_console
         if device_id is not None:
             self.device_id = device_id
@@ -130,6 +134,11 @@ class P4Switch(Switch):
         if self.log_console:
             args.append("--log-console")
         logfile = "/tmp/p4s.{}.log".format(self.name)
+        ###### Add all target specific arguments below ######
+        if self.grpc_server_addr:
+            args.extend(['-- --grpc-server-addr', str(self.grpc_server_addr)])
+        if self.cpu_port:
+            args.extend(['--cpu-port', str(self.cpu_port)])
         info(' '.join(args) + "\n")
 
         pid = None

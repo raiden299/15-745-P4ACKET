@@ -21,14 +21,14 @@
         {
             "node1": "h1",
             "node2": "s1",
-            "bandwidth": 10,
+            "bandwidth": 100,
             "delay": "5ms",
             "loss": 0
         },
         {
             "node1": "h2",
             "node2": "s1",
-            "bandwidth": 10,
+            "bandwidth": 100,
             "delay": "5ms",
             "loss": 0
         }

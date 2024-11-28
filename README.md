@@ -1,4 +1,4 @@
-# 15-745-P4ACKET
+# 15-745-P4CKET
 Mininet setup:
 
 1) Update the Makefile with the program you want to run (programs found in prog/)
