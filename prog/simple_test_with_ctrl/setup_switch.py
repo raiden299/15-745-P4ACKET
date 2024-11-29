@@ -23,7 +23,11 @@ def main():
         "table_add ipv4_lpm ipv4_forward 10.0.1.10/32 => 00:04:00:00:00:01 2"
     ]
 
-    setup_switch('s1', 9090, table_entries_s1)
+    mirroring = [
+        "mirroring_add 100 16"
+    ]
 
+    setup_switch('s1', 9090, table_entries_s1)
+    setup_switch('s1', 9090, mirroring)
 if __name__ == '__main__':
     main()
