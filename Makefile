@@ -13,4 +13,4 @@ entries:
 
 clean:
 	sudo mn -c
-	rm -r prog/*/*.p4i prog/*/*.json prog/*/*.pcap prog/*/*.txt
+	rm -r prog/*/*.p4i prog/*/*.json prog/*/*.pcap prog/*/*.txt prog/*/*.sum

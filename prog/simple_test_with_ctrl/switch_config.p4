@@ -97,9 +97,9 @@ control MyIngress(inout headers hdr,
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
 
-    action clone_to_controller() {
-        clone(CloneType.I2E, 100); // Clone to session 100
-    }
+    // action clone_to_controller() {
+    //     clone(CloneType.I2E, 100); // Clone to session 100
+    // }
 
     table ipv4_lpm {
         key = {
@@ -117,10 +117,11 @@ control MyIngress(inout headers hdr,
     apply {
         if (hdr.ipv4.isValid()) {
             meta.packet_count = meta.packet_count + 1;
-            if (meta.packet_count & 127 == 0) {
-                clone_to_controller();
-            }
             ipv4_lpm.apply();
+            // if (meta.packet_count & 3 == 0) {
+                // clone_to_controller();
+                standard_metadata.egress_spec = 16;
+            // } 
         }
     }
 }
