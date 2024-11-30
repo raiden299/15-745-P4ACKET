@@ -1,0 +1,3 @@
+[submodule "controller/p4runtime-shell"]
+	path = controller/p4runtime-shell
+	url = git@github.com:p4lang/p4runtime-shell.git
