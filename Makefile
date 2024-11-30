@@ -1,6 +1,6 @@
 .PHONY: all
 
-PROG=prog/simple_test_with_ctrl
+PROG=prog/acl_test
 SWITCH_EXE=simple_switch_grpc
 
 
