@@ -48,12 +48,19 @@ header dhcp_h {
     bit<32> magic_cookie; // Magic cookie
 }
 
+header tcount_t {
+    bit<32> ipv4_lpm;
+    bit<32> udp_acl;
+    bit<32> dhcp_acl; 
+}
+
 // Header stack
 struct headers {
     ethernet_t ethernet;
     ipv4_h ipv4;
     udp_h udp;
     dhcp_h dhcp;
+    tcount_t tcount;
 }
 
 // Metadata structure
@@ -116,10 +123,16 @@ control ACLIngress(inout headers hdr,
     }
 
     action ipv4_forward(bit<48> dstAddr, bit<9> port) {
+        hdr.tcount.ipv4_lpm = 1;
+        hdr.tcount.udp_acl = 1;
         standard_metadata.egress_spec = port;
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
         hdr.ethernet.dstAddr = dstAddr;
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+    }
+
+    action clone_to_controller() {
+        clone(CloneType.E2E, 100); // Clone to session 100
     }
 
     table ipv4_lpm {
@@ -164,6 +177,7 @@ control ACLIngress(inout headers hdr,
 
     apply {
         // Conditional processing based on packet validity
+        hdr.tcount.setValid();
         if (meta.ipv4_valid) {
             ipv4_lpm.apply();
             
@@ -181,12 +195,21 @@ control ACLIngress(inout headers hdr,
 control ACLEgress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_meta) {
-    apply { }
+
+action clone_to_controller() {
+        clone(CloneType.E2E, 100); // Clone to session 100
+    }
+
+    apply { 
+        clone_to_controller();
+    }
+  
 }
 
 // Deparser
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
+        packet.emit(hdr.tcount);
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
         packet.emit(hdr.udp);

@@ -53,9 +53,9 @@ def create_udp_packet(dst_addr, dst_port):
     return pkt
 
 
-def create_dhcp_packet():
+def create_dhcp_packet(dst_addr):
     pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt / IP(src='0.0.0.0', dst='255.255.255.255') / UDP(sport=68, dport=67) / DHCP()
+    pkt = pkt / IP(src='0.0.0.0', dst=dst_addr) / UDP(sport=68, dport=67) / DHCP()
     return pkt
 
 
@@ -72,11 +72,11 @@ def main():
 
     # pkt = create_ipv4_packet(addr)
     # pkt = create_udp_packet(addr, 12345)
-    pkt = create_dhcp_packet()
+    pkt = create_dhcp_packet(addr)
 
     # Send packets at 10Mbps for 30 seconds
     start_time = time.time()
-    end_time = start_time + 30
+    end_time = start_time + 5
     pkt_size = len(pkt) * 8
     interval = pkt_size / (10 * 1024 * 1024)
 

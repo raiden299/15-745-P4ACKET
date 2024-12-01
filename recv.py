@@ -3,6 +3,7 @@ import os
 import sys
 
 from scapy.all import (
+    Packet,
     TCP,
     FieldLenField,
     FieldListField,
@@ -10,10 +11,18 @@ from scapy.all import (
     IPOption,
     ShortField,
     get_if_list,
-    sniff
+    sniff,
+    BitField
 )
 from scapy.layers.inet import _IPOption_HDR
 
+class tcount(Packet):
+    name = "tcount"
+    fields_desc = [
+        BitField("ipv4_lpm", 0, 32),
+        BitField("udp_acl", 0, 32),
+        BitField("dhcp_acl", 0, 32)
+    ]
 
 def get_if():
     ifs=get_if_list()
@@ -42,6 +51,17 @@ class IPOption_MRI(IPOption):
 def handle_pkt(pkt):
     # if TCP in pkt and pkt[TCP].dport == 1234:
     #     print("got a packet")
+    # tc = pkt[tcount]
+    # print("\nTCount Layer Details:")
+    # print(f"IPv4 LPM: {tc.ipv4_lpm}")
+    # print(f"UDP ACL:  {tc.udp_acl}")
+    # print(f"DHCP ACL: {tc.dhcp_acl}")
+    print("Layers in the packet:")
+    current_layer = pkt
+    while current_layer:
+        print(current_layer.name)
+        current_layer = current_layer.payload
+
     pkt.show2()
     #    hexdump(pkt)
     sys.stdout.flush()
