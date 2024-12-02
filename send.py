@@ -2,31 +2,9 @@ import socket
 import sys
 import time
 
-from scapy.all import IP, Ether, UDP, get_if_hwaddr, get_if_list, sendp
+from scapy.all import *
 from scapy.packet import Packet
-from scapy.fields import ByteField, ShortField, IntField, IPField, StrFixedLenField
-
-
-class DHCP(Packet):
-    name = "DHCP"
-    fields_desc = [
-        ByteField("op", 1),
-        ByteField("htype", 1),
-        ByteField("hlen", 6),
-        ByteField("hops", 0),
-        IntField("xid", 0),
-        ShortField("secs", 0),
-        ShortField("flags", 0),
-        IPField("ciaddr", "0.0.0.0"),
-        IPField("yiaddr", "0.0.0.0"),
-        IPField("siaddr", "0.0.0.0"),
-        IPField("giaddr", "0.0.0.0"),
-        StrFixedLenField("chaddr", b'\x00' * 16, length=16),
-        StrFixedLenField("sname", b'\x00' * 64, length=64),
-        StrFixedLenField("file", b'\x00' * 128, length=128),
-        IntField("magic_cookie", 0x63825363)
-    ]
-
+from scapy.fields import ByteField, ShortField, IntField, IPField, StrFixedLenField, ShortEnumField, XShortField
 
 def get_if():
     ifs = get_if_list()
@@ -49,13 +27,18 @@ def create_ipv4_packet(dst_addr):
 
 def create_udp_packet(dst_addr, dst_port):
     pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt / IP(dst=dst_addr) / UDP(dport=dst_port)
+    pkt = pkt / IP(dst=dst_addr) / UDP(sport=12345, dport=dst_port)
     return pkt
 
 
-def create_dhcp_packet(dst_addr):
+def create_dhcp_block_packet(dst_addr):
     pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt / IP(src='0.0.0.0', dst=dst_addr) / UDP(sport=68, dport=67) / DHCP()
+    pkt = pkt / IP(src='10.0.0.10', dst=dst_addr, proto=17) / UDP(sport=67, dport=68) / BOOTP(ciaddr='10.0.0.10')
+    return pkt
+
+def create_dhcp_regular_packet(dst_addr):
+    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
+    pkt = pkt / IP(src='10.0.0.10', dst=dst_addr, proto=17) / UDP(sport=67, dport=68) / BOOTP(ciaddr='10.0.0.10')
     return pkt
 
 
@@ -71,18 +54,23 @@ def main():
     print("sending on interface %s to %s" % (iface, str(addr)))
 
     # pkt = create_ipv4_packet(addr)
-    # pkt = create_udp_packet(addr, 12345)
+    # pkt = create_udp_packet(addr, 80)
     pkt = create_dhcp_packet(addr)
 
     # Send packets at 10Mbps for 30 seconds
     start_time = time.time()
-    end_time = start_time + 5
+    end_time = start_time + 25
     pkt_size = len(pkt) * 8
     interval = pkt_size / (10 * 1024 * 1024)
 
+    packets_sent = 0
+
     while time.time() < end_time:
         sendp(pkt, iface=iface, verbose=False)
+        packets_sent += 1
         time.sleep(interval)
+
+    print(f"Sent {packets_sent} packets")
 
 
 if __name__ == '__main__':
