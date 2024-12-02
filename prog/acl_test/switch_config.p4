@@ -212,7 +212,7 @@ control ACLIngress(inout headers hdr,
             }
         }
 
-        if (__count & 255 == 0) {
+        if (__count & 127 == 0) {
             __clone_to_controller();
         }
     }

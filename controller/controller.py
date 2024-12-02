@@ -4,12 +4,17 @@ from scapy.all import *
 from scapy.packet import Packet
 from scapy.fields import ByteField, ShortField, IntField, IPField, StrFixedLenField
 
-# Global packet counter
+# Global variables
 packet_count = 0
-
+bitvec_arr = []
 class TCount(Packet):
     name = "TCount"
     fields_desc = []
+
+def calc_per_table_hit_rate():
+    for i, bitvec in enumerate(bitvec_arr):
+        hit_percentage = (sum(bitvec) / packet_count) * 100
+        print(f"Table {TCount.fields_desc[i].name} hit percentage: {hit_percentage}%")
 
 def process_packet(packet):    
         eth = Ether(packet.packet.payload) # type: ignore
@@ -21,10 +26,29 @@ def process_packet(packet):
         except Exception as e:
             print(f"Unidentified packet: {e}")
             return
+        
+        global bitvec_arr
+        local_bitvec_arr = []
+        for field in TCount.fields_desc:
+            bitvec = [(tcount.getfieldval(field.name) >> i) & 1 for i in range(31, -1, -1)]
+            local_bitvec_arr.append(bitvec)
+
+        if len(bitvec_arr) == 0:
+            bitvec_arr = local_bitvec_arr
+        else:
+            # Do an element-wise sum of each element in the bitvec_arr with the local_bitvec_arr
+            bitvec_arr = [list(map(lambda x, y: x + y, bitvec_arr[i], local_bitvec_arr[i])) for i in range(len(bitvec_arr))]
+
+            
 
         global packet_count
         packet_count += 1
+
+        if packet_count % 10 == 0:
+            calc_per_table_hit_rate()
+
         print(f"Packet count: {packet_count}")
+        print(bitvec_arr)
 
 def start_sniffer():
     packet_in = sh.PacketIn()

@@ -5,6 +5,50 @@ import time
 from scapy.all import *
 from scapy.packet import Packet
 from scapy.fields import ByteField, ShortField, IntField, IPField, StrFixedLenField, ShortEnumField, XShortField
+import random
+
+########### EXPERIMENT PARAMS ###########
+DURATION_S = 300
+
+########### SEND FUNCTIONS ###########
+
+## IPv4 packets
+
+def create_ipv4_block_packet(dst_addr):
+    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
+    pkt = pkt / IP(dst='0.0.0.0')
+    return pkt
+
+def create_ipv4_regular_packet(dst_addr):
+    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
+    pkt = pkt / IP(dst=dst_addr)
+    return pkt
+
+## UDP Packets
+
+def create_udp_block_packet(dst_addr, dst_port):
+    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
+    pkt = pkt / IP(dst=dst_addr) / UDP(sport=12345, dport=dst_port)
+    return pkt
+
+def create_udp_regular_packet(dst_addr, dst_port):
+    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
+    pkt = pkt / IP(dst=dst_addr) / UDP(sport=22346, dport=dst_port)
+    return pkt
+
+## DHCP Packets
+
+def create_dhcp_block_packet(dst_addr):
+    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
+    pkt = pkt / IP(src='10.0.0.10', dst=dst_addr, proto=17) / UDP(sport=67, dport=68) / BOOTP(ciaddr='10.0.0.10')
+    return pkt
+
+def create_dhcp_regular_packet(dst_addr):
+    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
+    pkt = pkt / IP(src='10.0.0.10', dst=dst_addr, proto=17) / UDP(sport=67, dport=68) / BOOTP(ciaddr='10.40.0.10')
+    return pkt
+
+########### UTIL FUNCTIONS ###########
 
 def get_if():
     ifs = get_if_list()
@@ -19,29 +63,6 @@ def get_if():
     return iface
 
 
-def create_ipv4_packet(dst_addr):
-    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt / IP(dst=dst_addr)
-    return pkt
-
-
-def create_udp_packet(dst_addr, dst_port):
-    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt / IP(dst=dst_addr) / UDP(sport=12345, dport=dst_port)
-    return pkt
-
-
-def create_dhcp_block_packet(dst_addr):
-    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt / IP(src='10.0.0.10', dst=dst_addr, proto=17) / UDP(sport=67, dport=68) / BOOTP(ciaddr='10.0.0.10')
-    return pkt
-
-def create_dhcp_regular_packet(dst_addr):
-    pkt = Ether(src=get_if_hwaddr(get_if()), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt / IP(src='10.0.0.10', dst=dst_addr, proto=17) / UDP(sport=67, dport=68) / BOOTP(ciaddr='10.0.0.10')
-    return pkt
-
-
 def main():
 
     if len(sys.argv) < 2:
@@ -53,22 +74,30 @@ def main():
 
     print("sending on interface %s to %s" % (iface, str(addr)))
 
-    # pkt = create_ipv4_packet(addr)
-    # pkt = create_udp_packet(addr, 80)
-    pkt = create_dhcp_packet(addr)
+    # Add any new functions to this list and update packet_args
+    packet_functions = [create_ipv4_regular_packet, create_ipv4_block_packet, create_udp_regular_packet, create_udp_block_packet, create_dhcp_regular_packet, create_dhcp_block_packet]
+    packet_args = {
+        create_ipv4_regular_packet: [addr],
+        create_ipv4_block_packet: [addr],
+        create_udp_regular_packet: [addr, 80],
+        create_udp_block_packet: [addr, 80],
+        create_dhcp_regular_packet: [addr],
+        create_dhcp_block_packet: [addr]
+    }
 
-    # Send packets at 10Mbps for 30 seconds
-    start_time = time.time()
-    end_time = start_time + 25
-    pkt_size = len(pkt) * 8
-    interval = pkt_size / (10 * 1024 * 1024)
+    # I think could be faster but is okay for now
+    def get_random_packet(addr):
+        rand__func = random.randint(0, len(packet_functions)-1)
+        return packet_functions[rand__func](*packet_args[packet_functions[rand__func]])
 
+    # Send packets for 30 seconds
+    end_time = time.time() + DURATION_S
     packets_sent = 0
 
     while time.time() < end_time:
+        pkt = get_random_packet(addr)
         sendp(pkt, iface=iface, verbose=False)
         packets_sent += 1
-        time.sleep(interval)
 
     print(f"Sent {packets_sent} packets")
 
