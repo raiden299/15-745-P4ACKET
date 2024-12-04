@@ -7,9 +7,20 @@ from scapy.fields import ByteField, ShortField, IntField, IPField, StrFixedLenFi
 # Global variables
 packet_count = 0
 bitvec_arr = []
+adjacency_list = {}
+
 class TCount(Packet):
     name = "TCount"
     fields_desc = []
+
+def print_adjacency_list():
+    for field, adj_fields in adjacency_list.items():
+        print(f"{field} -> {adj_fields}")
+
+def print_adjacency_list_text():
+    print(f"---- Interference list ----")
+    for table, dependencies in adjacency_list.items():
+        print(f"Table {table} interferes with: {' '.join(dependencies)}")
 
 def calc_per_table_hit_rate():
     for i, bitvec in enumerate(bitvec_arr):
@@ -27,7 +38,7 @@ def process_packet(packet):
             print(f"Unidentified packet: {e}")
             return
         
-        global bitvec_arr
+        global bitvec_arr, packet_count, adjacency_list
         local_bitvec_arr = []
         for field in TCount.fields_desc:
             bitvec = [(tcount.getfieldval(field.name) >> i) & 1 for i in range(31, -1, -1)]
@@ -39,13 +50,23 @@ def process_packet(packet):
             # Do an element-wise sum of each element in the bitvec_arr with the local_bitvec_arr
             bitvec_arr = [list(map(lambda x, y: x + y, bitvec_arr[i], local_bitvec_arr[i])) for i in range(len(bitvec_arr))]
 
-            
+        for i, field in enumerate(tcount.fields_desc):
+            if field.name not in adjacency_list:
+                adjacency_list[field.name] = []
+            for j in range(i + 1, len(tcount.fields_desc)):
+                if tcount.fields_desc[j].name not in adjacency_list:
+                    adjacency_list[tcount.fields_desc[j].name] = []
+                if tcount.getfieldval(field.name) > 0 and tcount.getfieldval(tcount.fields_desc[j].name) > 0:
+                    if tcount.fields_desc[j].name not in adjacency_list[field.name]:
+                        adjacency_list[field.name].append(tcount.fields_desc[j].name)
+                        adjacency_list[tcount.fields_desc[j].name].append(field.name)
 
-        global packet_count
         packet_count += 1
 
         if packet_count % 10 == 0:
             calc_per_table_hit_rate()
+            print_adjacency_list()
+            print_adjacency_list_text()
 
         print(f"Packet count: {packet_count}")
         print(bitvec_arr)
