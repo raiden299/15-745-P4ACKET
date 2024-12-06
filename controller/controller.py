@@ -5,6 +5,8 @@ from scapy.packet import Packet
 from scapy.fields import ByteField, ShortField, IntField, IPField, StrFixedLenField
 
 # Global variables
+traffic_variance = 0
+refresh_interval = 0
 packet_count = 0
 bitvec_arr = []
 adjacency_list = {}
@@ -16,11 +18,18 @@ class TCount(Packet):
 def print_adjacency_list():
     for field, adj_fields in adjacency_list.items():
         print(f"{field} -> {adj_fields}")
+    
+def invoke_p4c_compiler():
+    print("Invoking p4c compiler")
+    os.system("../p4c/build/p4c-bm2-ss ../prog/acl_test/switch_config.p4")
 
 def print_adjacency_list_text():
     print(f"---- Interference list ----")
-    for table, dependencies in adjacency_list.items():
-        print(f"Table {table} interferes with: {' '.join(dependencies)}")
+    with open("interf_data.txt", "w") as f:
+        for table, dependencies in adjacency_list.items():
+            line = f"Table {table}_0 interferes with: {' '.join(dep + '_0' for dep in dependencies)}"
+            print(line)
+            f.write(line + "\n")
 
 def calc_per_table_hit_rate():
     for i, bitvec in enumerate(bitvec_arr):
@@ -67,6 +76,7 @@ def process_packet(packet):
             calc_per_table_hit_rate()
             print_adjacency_list()
             print_adjacency_list_text()
+            invoke_p4c_compiler()
 
         print(f"Packet count: {packet_count}")
         print(bitvec_arr)
